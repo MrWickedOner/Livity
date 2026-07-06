@@ -7,6 +7,7 @@ import {
 import type { ReactNode } from "react";
 
 import appCss from "~/styles/app.css?url";
+import { AuthProvider } from "~/lib/auth-context";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -49,12 +50,8 @@ export const Route = createRootRoute({
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
       <span className="text-6xl">🔮</span>
       <h1 className="text-2xl font-bold text-warm-900">Page not found</h1>
-      <p className="text-warm-500">
-        The memory you're looking for doesn't exist yet.
-      </p>
-      <a className="btn-primary" href="/">
-        Go home
-      </a>
+      <p className="text-warm-500">The memory you're looking for doesn't exist yet.</p>
+      <a className="btn-primary" href="/">Go home</a>
     </div>
   ),
   component: RootComponent,
@@ -63,7 +60,9 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <RootDocument>
-      <Outlet />
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
     </RootDocument>
   );
 }

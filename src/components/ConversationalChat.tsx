@@ -1,31 +1,29 @@
 import { useState, useRef, useEffect } from "react";
-
-interface Message {
-  id: string;
-  role: "user" | "twin";
-  content: string;
-  timestamp: Date;
-}
+import { chat } from "~/lib/api";
+import type { ChatMessage } from "~/lib/types";
 
 interface ConversationalChatProps {
+  twinId: string;
   twinName: string;
   twinAvatarUrl?: string;
 }
 
 export function ConversationalChat({
+  twinId,
   twinName,
   twinAvatarUrl,
 }: ConversationalChatProps) {
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "twin",
       content: `Hello, I'm ${twinName}. I'd love to hear from you — ask me anything about my life, my stories, or just say hello.`,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,28 +33,40 @@ export function ConversationalChat({
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMsg: Message = {
+    const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
       content: input.trim(),
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     };
 
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
+    setError(null);
 
-    // Simulate twin response — will be replaced with AI API call
-    setTimeout(() => {
-      const twinMsg: Message = {
+    try {
+      const res = await chat.send(twinId, { message: userMsg.content });
+      const twinMsg: ChatMessage = {
         id: `twin-${Date.now()}`,
         role: "twin",
-        content: `That's a wonderful question. Let me share a memory with you about that... *This is a placeholder response — the AI twin will be connected by the AI & RAG Engineer.*`,
-        timestamp: new Date(),
+        content: res.reply,
+        timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, twinMsg]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to get response");
+      // Fallback: show a friendly offline message
+      const fallbackMsg: ChatMessage = {
+        id: `twin-${Date.now()}`,
+        role: "twin",
+        content: `I'm sorry, I'm having trouble connecting right now. Please try again in a moment. [Offline: ${err instanceof Error ? err.message : "unknown error"}]`,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, fallbackMsg]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -73,7 +83,7 @@ export function ConversationalChat({
         <div>
           <p className="font-semibold text-warm-900">{twinName}</p>
           <p className="text-xs text-warm-400">
-            {isTyping ? "typing..." : "Digital Twin"}
+            {isTyping ? "thinking..." : "Digital Twin · Mistral AI"}
           </p>
         </div>
       </div>
@@ -81,27 +91,11 @@ export function ConversationalChat({
       {/* Messages */}
       <div className="flex-1 space-y-4 overflow-y-auto py-4">
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                msg.role === "user"
-                  ? "bg-hearth-600 text-white"
-                  : "bg-warm-100 text-warm-800"
-              }`}
-            >
-              <p className="text-sm leading-relaxed">{msg.content}</p>
-              <p
-                className={`mt-1 text-right text-[10px] ${
-                  msg.role === "user" ? "text-white/60" : "text-warm-400"
-                }`}
-              >
-                {msg.timestamp.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === "user" ? "bg-hearth-600 text-white" : "bg-warm-100 text-warm-800"}`}>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+              <p className={`mt-1 text-right text-[10px] ${msg.role === "user" ? "text-white/60" : "text-warm-400"}`}>
+                {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </p>
             </div>
           </div>
@@ -118,6 +112,13 @@ export function ConversationalChat({
             </div>
           </div>
         )}
+
+        {error && (
+          <div className="rounded-xl bg-red-50 p-3 text-xs text-red-700">
+            Could not reach the AI. The backend might be offline.
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 

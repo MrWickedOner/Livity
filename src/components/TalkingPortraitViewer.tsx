@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 interface TalkingPortraitProps {
   name: string;
   avatarUrl?: string;
+  videoUrl?: string;
   relationship?: string;
   isActive?: boolean;
 }
@@ -10,10 +11,23 @@ interface TalkingPortraitProps {
 export function TalkingPortraitViewer({
   name,
   avatarUrl,
+  videoUrl,
   relationship,
   isActive = false,
 }: TalkingPortraitProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+    }
+    setIsPlaying(!isPlaying);
+  };
 
   return (
     <div className="card group relative overflow-hidden text-center">
@@ -33,7 +47,6 @@ export function TalkingPortraitViewer({
           </div>
         )}
 
-        {/* Status indicator */}
         {isActive && (
           <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-green-500 px-2.5 py-1 text-xs font-medium text-white shadow-sm">
             <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
@@ -42,47 +55,58 @@ export function TalkingPortraitViewer({
         )}
       </div>
 
-      {/* Info */}
       <h3 className="text-xl font-bold text-warm-900">{name}</h3>
       {relationship && (
         <p className="mt-0.5 text-sm text-warm-500">{relationship}</p>
       )}
 
-      {/* Actions */}
       <div className="mt-4 flex items-center justify-center gap-3">
-        <button
-          className="btn-primary"
-          onClick={() => setIsPlaying(!isPlaying)}
-          type="button"
-        >
-          {isPlaying ? "⏸ Pause" : "▶ Talk to me"}
+        <button className="btn-primary" onClick={togglePlay} type="button">
+          {isPlaying ? "⏸ Pause" : "▶ Hear their voice"}
         </button>
       </div>
 
-      {/* Placeholder video frame */}
-      {isPlaying && (
-        <div className="mt-4 overflow-hidden rounded-xl bg-gradient-to-br from-warm-100 to-hearth-50 p-4">
-          <div className="animate-pulse space-y-2">
-            <div className="flex items-center gap-2 text-hearth-700">
-              <span className="text-lg">✨</span>
-              <span className="text-sm font-medium">
-                {name} is speaking...
-              </span>
+      {/* SadTalker-generated video player */}
+      {(isPlaying || videoUrl) && (
+        <div className="mt-4 overflow-hidden rounded-xl bg-warm-900/5">
+          {videoUrl ? (
+            <video
+              className="w-full rounded-xl"
+              controls
+              onEnded={() => setIsPlaying(false)}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              ref={videoRef}
+              src={videoUrl}
+            />
+          ) : (
+            <div className="flex flex-col items-center gap-3 px-4 py-8 text-warm-500">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-hearth-100 text-2xl text-hearth-600">
+                🎬
+              </div>
+              <p className="text-sm font-medium text-warm-600">
+                Portrait video being generated with SadTalker...
+              </p>
+              <div className="flex gap-1">
+                {[1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    className="h-2 w-2 animate-bounce rounded-full bg-hearth-400"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="h-3 w-3/4 rounded-full bg-hearth-200" />
-            <div className="h-3 w-1/2 rounded-full bg-hearth-200" />
-          </div>
+          )}
         </div>
       )}
 
-      {/* Holographic shine effect */}
       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-t from-white/0 via-white/0 to-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
     </div>
   );
 }
 
 export function PortraitGrid() {
-  // Placeholder: will be populated from the backend
   const portraits: TalkingPortraitProps[] = [
     { name: "Grandma Rose", relationship: "Grandmother", isActive: true },
     { name: "Grandpa Joe", relationship: "Grandfather" },

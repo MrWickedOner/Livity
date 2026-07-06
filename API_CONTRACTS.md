@@ -1,6 +1,9 @@
-# Livity API Contracts (Proposed)
+# Livity API Contracts
 
-These are the API contracts the frontend components expect. These contracts were designed by reading the components built in the initial dashboard/upload flow UI. Backend and Security engineers should align to these contracts.
+**Stack confirmed by owner (2026-07-06):**
+- **Talking Head:** Self-hosted [SadTalker](https://github.com/OpenTalker/SadTalker) — generates portrait videos from photos + audio.
+- **LLM:** [Mistral AI](https://mistral.ai) (open-weight models) — standard chat completion API.
+- **No paid APIs** — everything is open-source or free tier.
 
 ---
 
@@ -11,24 +14,12 @@ Create a new account.
 
 **Request:**
 ```json
-{
-  "name": "Alex Rivera",
-  "email": "alex@example.com",
-  "password": "securepassword123"
-}
+{ "name": "Alex Rivera", "email": "alex@example.com", "password": "securepassword123" }
 ```
 
 **Response (201):**
 ```json
-{
-  "user": {
-    "id": "uuid",
-    "name": "Alex Rivera",
-    "email": "alex@example.com",
-    "createdAt": "2026-07-06T00:00:00Z"
-  },
-  "token": "jwt-token"
-}
+{ "user": { "id": "uuid", "name": "Alex Rivera", "email": "alex@example.com", "createdAt": "2026-07-06T00:00:00Z" }, "token": "jwt-token" }
 ```
 
 ### `POST /api/auth/login`
@@ -36,18 +27,12 @@ Authenticate an existing user.
 
 **Request:**
 ```json
-{
-  "email": "alex@example.com",
-  "password": "securepassword123"
-}
+{ "email": "alex@example.com", "password": "securepassword123" }
 ```
 
 **Response (200):**
 ```json
-{
-  "user": { "id": "uuid", "name": "Alex Rivera", "email": "alex@example.com" },
-  "token": "jwt-token"
-}
+{ "user": { "id": "uuid", "name": "Alex Rivera", "email": "alex@example.com" }, "token": "jwt-token" }
 ```
 
 ### `GET /api/auth/me`
@@ -57,9 +42,7 @@ Get the current authenticated user.
 
 **Response (200):**
 ```json
-{
-  "user": { "id": "uuid", "name": "Alex Rivera", "email": "alex@example.com", "plan": "twin" }
-}
+{ "user": { "id": "uuid", "name": "Alex Rivera", "email": "alex@example.com", "plan": "twin" } }
 ```
 
 ---
@@ -76,15 +59,7 @@ List all content in the user's vault, grouped by type.
 {
   "storage": { "usedBytes": 156000000, "totalBytes": 50000000000 },
   "twins": [
-    {
-      "id": "uuid",
-      "name": "Grandma Rose",
-      "relationship": "Grandmother",
-      "avatarUrl": "https://...",
-      "isActive": true,
-      "createdAt": "2026-06-01T00:00:00Z",
-      "conversationCount": 24
-    }
+    { "id": "uuid", "name": "Grandma Rose", "relationship": "Grandmother", "avatarUrl": "https://...", "videoUrl": "https://...", "isActive": true, "createdAt": "2026-06-01T00:00:00Z", "conversationCount": 24 }
   ],
   "photos": [
     { "id": "uuid", "name": "Family reunion 2025", "url": "https://...", "thumbnail": "https://...", "uploadedAt": "2025-12-15T00:00:00Z", "type": "photo" }
@@ -99,7 +74,7 @@ List all content in the user's vault, grouped by type.
 ```
 
 ### `POST /api/vault/upload`
-Upload media files to the vault.
+Upload media files to the vault. The backend will store files, trigger SadTalker processing for photos, and return URLs.
 
 **Headers:** `Authorization: Bearer <token>`
 **Content-Type:** `multipart/form-data`
@@ -110,11 +85,7 @@ Upload media files to the vault.
 
 **Response (201):**
 ```json
-{
-  "items": [
-    { "id": "uuid", "name": "family-photo.jpg", "url": "https://...", "type": "photo" }
-  ]
-}
+{ "items": [ { "id": "uuid", "name": "family-photo.jpg", "url": "https://...", "type": "photo" } ] }
 ```
 
 ### `DELETE /api/vault/items/:id`
@@ -140,49 +111,24 @@ List all Digital Twins owned by the user.
 ```json
 {
   "twins": [
-    {
-      "id": "uuid",
-      "name": "Grandma Rose",
-      "relationship": "Grandmother",
-      "avatarUrl": "https://...",
-      "isActive": true,
-      "status": "ready" | "processing" | "pending",
-      "createdAt": "2026-06-01T00:00:00Z",
-      "lastConversationAt": "2026-07-05T00:00:00Z",
-      "conversationCount": 24
-    }
+    { "id": "uuid", "name": "Grandma Rose", "relationship": "Grandmother", "avatarUrl": "https://...", "videoUrl": "https://...", "isActive": true, "status": "ready"|"processing"|"pending", "createdAt": "2026-06-01T00:00:00Z", "lastConversationAt": "2026-07-05T00:00:00Z", "conversationCount": 24 }
   ]
 }
 ```
 
 ### `POST /api/twins`
-Create a new Digital Twin from selected vault items.
+Create a new Digital Twin from selected vault items. Backend will queue SadTalker processing for photo-based portrait video generation.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request:**
 ```json
-{
-  "name": "Grandma Rose",
-  "relationship": "Grandmother",
-  "photoIds": ["uuid1", "uuid2", "uuid3"],
-  "documentIds": ["uuid4", "uuid5"],
-  "audioIds": ["uuid6"]
-}
+{ "name": "Grandma Rose", "relationship": "Grandmother", "photoIds": ["uuid1","uuid2","uuid3"], "documentIds": ["uuid4","uuid5"], "audioIds": ["uuid6"] }
 ```
 
 **Response (201):**
 ```json
-{
-  "twin": {
-    "id": "uuid",
-    "name": "Grandma Rose",
-    "relationship": "Grandmother",
-    "avatarUrl": "https://...",
-    "status": "processing",
-    "estimatedCompletionSeconds": 120
-  }
-}
+{ "twin": { "id": "uuid", "name": "Grandma Rose", "relationship": "Grandmother", "avatarUrl": "https://...", "status": "processing", "estimatedCompletionSeconds": 120 } }
 ```
 
 ### `DELETE /api/twins/:id`
@@ -197,18 +143,16 @@ Delete a Digital Twin.
 
 ---
 
-## 4. Conversation
+## 4. Conversation (Mistral AI)
 
 ### `POST /api/twins/:id/chat`
-Send a message to a Digital Twin and get a response.
+Send a message to a Digital Twin. Backend uses Mistral AI chat completion, injecting context from the twin's uploaded memories. Returns the reply text and optionally an audio URL (generated via TTS).
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request:**
 ```json
-{
-  "message": "Tell me about your childhood, Grandma."
-}
+{ "message": "Tell me about your childhood, Grandma." }
 ```
 
 **Response (200):**
@@ -216,11 +160,8 @@ Send a message to a Digital Twin and get a response.
 {
   "reply": "Oh, that's a wonderful question! Let me tell you about the summer I turned seven...",
   "twinId": "uuid",
-  "audioUrl": "https://...", 
-  "metadata": {
-    "sourcesUsed": ["document-uuid", "recording-uuid"],
-    "confidence": 0.95
-  }
+  "audioUrl": "https://...",
+  "sourcesUsed": ["document-uuid", "recording-uuid"]
 }
 ```
 
@@ -228,22 +169,11 @@ Send a message to a Digital Twin and get a response.
 Get conversation history with a Digital Twin.
 
 **Headers:** `Authorization: Bearer <token>`
-
 **Query params:** `?limit=50&before=timestamp`
 
 **Response (200):**
 ```json
-{
-  "messages": [
-    {
-      "id": "uuid",
-      "role": "user" | "twin",
-      "content": "Message text here",
-      "timestamp": "2026-07-05T14:30:00Z"
-    }
-  ],
-  "hasMore": false
-}
+{ "messages": [ { "id": "uuid", "role": "user"|"twin", "content": "Message text here", "timestamp": "2026-07-05T14:30:00Z" } ], "hasMore": false }
 ```
 
 ---
@@ -257,19 +187,7 @@ List family members with access to the vault.
 
 **Response (200):**
 ```json
-{
-  "members": [
-    {
-      "id": "uuid",
-      "name": "Alex Rivera",
-      "email": "alex@example.com",
-      "role": "owner" | "contributor" | "viewer",
-      "status": "active" | "pending",
-      "joinedAt": "2026-06-01T00:00:00Z",
-      "avatarUrl": "https://..."
-    }
-  ]
-}
+{ "members": [ { "id": "uuid", "name": "Alex Rivera", "email": "alex@example.com", "role": "owner"|"contributor"|"viewer", "status": "active"|"pending", "joinedAt": "2026-06-01T00:00:00Z", "avatarUrl": "https://..." } ] }
 ```
 
 ### `POST /api/family/invite`
@@ -279,22 +197,12 @@ Send invitations to family members.
 
 **Request:**
 ```json
-{
-  "invitees": [
-    { "email": "maria@example.com", "role": "viewer" },
-    { "email": "carlos@example.com", "role": "contributor" }
-  ]
-}
+{ "invitees": [ { "email": "maria@example.com", "role": "viewer" }, { "email": "carlos@example.com", "role": "contributor" } ] }
 ```
 
 **Response (201):**
 ```json
-{
-  "invitations": [
-    { "email": "maria@example.com", "status": "sent" },
-    { "email": "carlos@example.com", "status": "sent" }
-  ]
-}
+{ "invitations": [ { "email": "maria@example.com", "status": "sent" }, { "email": "carlos@example.com", "status": "sent" } ] }
 ```
 
 ### `PATCH /api/family/members/:id/role`
@@ -333,15 +241,7 @@ Get the user's profile and subscription info.
 
 **Response (200):**
 ```json
-{
-  "name": "Alex Rivera",
-  "email": "alex@example.com",
-  "plan": "twin",
-  "storageUsed": 156000000,
-  "storageTotal": 50000000000,
-  "subscriptionStatus": "active",
-  "nextBillingDate": "2026-08-01T00:00:00Z"
-}
+{ "name": "Alex Rivera", "email": "alex@example.com", "plan": "twin", "storageUsed": 156000000, "storageTotal": 50000000000, "subscriptionStatus": "active", "nextBillingDate": "2026-08-01T00:00:00Z" }
 ```
 
 ### `PATCH /api/profile`
@@ -366,12 +266,7 @@ Update user profile.
 ### Error Responses
 All endpoints return errors in a consistent format:
 ```json
-{
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Invalid or expired token"
-  }
-}
+{ "error": { "code": "UNAUTHORIZED", "message": "Invalid or expired token" } }
 ```
 
 Standard error codes: `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION_ERROR`, `RATE_LIMITED`, `INTERNAL_ERROR`.
