@@ -207,6 +207,25 @@ export const family = {
   },
 };
 
+// ── Talking Portraits (SadTalker) ────────────────────────────────────
+
+export const portraits = {
+  generate(twinId: string, data: { photo_path: string; text: string; voice?: string; twin_name?: string }) {
+    return request<{ twin_id: string; portrait_url: string; status: string; message: string }>(
+      "POST",
+      `/api/twin/${twinId}/portrait`,
+      data,
+    );
+  },
+
+  getStatus(twinId: string) {
+    return request<{ twin_id: string; portrait_url: string; status: string; message: string }>(
+      "GET",
+      `/api/twin/${twinId}/portrait`,
+    );
+  },
+};
+
 // ── Profile ──────────────────────────────────────────────────────────
 
 export const profile = {
