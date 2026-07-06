@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "info"
 
-    # Database
+    # Database (PostgreSQL with pgvector / SQLite fallback)
     database_url: str = ""
 
     # OpenAI
@@ -24,6 +24,9 @@ class Settings(BaseSettings):
 
     # Anthropic
     anthropic_api_key: str = ""
+
+    # Mistral AI (free tier — primary LLM)
+    mistral_api_key: str = ""
 
     # D-ID (talking-head)
     did_api_key: str = ""

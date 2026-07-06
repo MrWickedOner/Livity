@@ -24,4 +24,5 @@ data/vault/
 Thumbs.db
 
 # Logs
-*.log
+*.logdata/*.db
+data/vault/

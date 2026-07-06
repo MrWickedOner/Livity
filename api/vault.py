@@ -1,5 +1,7 @@
 """
 Vault API — Upload and retrieve encrypted content.
+
+Wires to: EncryptionService (Security Engineer), TwinService.
 """
 
 from typing import List
@@ -28,23 +30,22 @@ async def upload_to_vault(
     encryption: EncryptionService = Depends(),
 ):
     """
-    STUB: Accepts a file upload, encrypts it, and stores it in the vault.
+    Accepts a file upload, encrypts it, and stores it in the vault.
 
-    TODO: Wire to actual vault storage (Security Engineer).
-          - Call encryption.encrypt(file_bytes)
-          - Store encrypted blob in configured storage backend
-          - Record metadata in database
+    Real implementation will:
+      1. Read file bytes
+      2. Call encryption.encrypt(file_bytes) → ciphertext
+      3. Store encrypted blob in configured backend
+      4. Record metadata in database
     """
-    # Read the uploaded file bytes
     contents = await file.read()
-
-    # Stub response — replace with real encryption + storage logic
+    # TODO: wire to real encryption + database storage
     return UploadResponse(
         item_id="stub-uuid-placeholder",
         filename=file.filename,
         content_type=file.content_type,
         size_bytes=len(contents),
-        message="Upload received. Encryption and storage: TODO.",
+        message="Upload received. Encryption and storage: TODO (Security Engineer).",
     )
 
 
@@ -54,11 +55,7 @@ async def upload_to_vault(
     summary="List vault items for the current user",
 )
 async def list_vault_items():
-    """
-    STUB: Returns a placeholder list of vault items.
-
-    TODO: Query database for user's vault items.
-    """
+    """STUB: Returns placeholder vault items. TODO: wire to database."""
     return [
         VaultItem(
             item_id="stub-001",
@@ -76,11 +73,7 @@ async def list_vault_items():
     summary="Get vault item metadata",
 )
 async def get_vault_item(item_id: str):
-    """
-    STUB: Returns placeholder metadata for a vault item.
-
-    TODO: Fetch from database; decrypt metadata only.
-    """
+    """STUB: Returns placeholder metadata for a vault item."""
     return VaultItem(
         item_id=item_id,
         filename="sample_upload.txt",

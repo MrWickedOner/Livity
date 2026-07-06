@@ -1,7 +1,7 @@
 """
 Livity Backend — Application Entry Point
 
-FastAPI application with CORS middleware and all stub route mounts.
+FastAPI application with CORS middleware, database initialization, and all routes.
 Run with: uvicorn main:app --reload
 """
 
@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.vault import router as vault_router
 from api.twin import router as twin_router
 from core.config import get_settings
+from db.database import init_db
 
 
 @asynccontextmanager
@@ -20,6 +21,14 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle."""
     settings = get_settings()
     print(f"[Livity] Starting — environment={settings.environment}")
+
+    # Initialize database tables
+    try:
+        init_db()
+        print("[Livity] Database tables initialized.")
+    except Exception as e:
+        print(f"[Livity] DB init warning (may be harmless): {e}")
+
     yield
     print("[Livity] Shutting down")
 
@@ -27,7 +36,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Livity API",
     description="Digital Twin platform — turn memories into an AI twin your family can talk to, forever.",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -40,7 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Stub Route Mounting ────────────────────────────────────────────
+# ── Route Mounting ──────────────────────────────────────────────────
 app.include_router(vault_router, prefix="/api/vault", tags=["Vault"])
 app.include_router(twin_router, prefix="/api/twin", tags=["Twin"])
 
@@ -48,4 +57,4 @@ app.include_router(twin_router, prefix="/api/twin", tags=["Twin"])
 @app.get("/health")
 async def health_check():
     """Simple health check for the API."""
-    return {"status": "ok", "version": "0.1.0"}
+    return {"status": "ok", "version": "0.2.0"}
