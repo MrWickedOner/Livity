@@ -1,3 +1,32 @@
+node_modules
+.env
+.env.local
+.DS_Store
+.cache
+.output
+.nitro
+.tanstack
+/dist/
+/dist-ssr/
+/.run/
+src/routeTree.gen.ts
 .venv/
+
+# Python
 __pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+backend/.venv/
+
+# Data
 data/
+
+# Generated portraits
+backend/data/portraits/*.mp4
+backend/data/portraits/*.wav
+backend/data/portraits/*.avi
+
+# Large model downloads
+backend/sad_talker/checkpoints/
+backend/sad_talker/gfpgan/weights/
