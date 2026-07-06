@@ -5,7 +5,7 @@ CREATE TABLE invitations (
     inviter_id TEXT NOT NULL REFERENCES users(id),
     invitee_email TEXT NOT NULL,
     invitee_name TEXT NOT NULL DEFAULT '',
-    invite_code TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+    invite_code TEXT UNIQUE NOT NULL DEFAULT '',
     access_level TEXT NOT NULL DEFAULT 'read' CHECK (access_level IN ('read', 'write_memory')),
     message TEXT NOT NULL DEFAULT '',
     expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '30 days'),

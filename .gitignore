@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+data/vault/
+.env
+shared/backend/.env
