@@ -1,7 +1,11 @@
 """
-Talking Head Service — Generates animated portraits using D-ID or HeyGen API.
+Talking Head Service — Generates animated portraits using SadTalker (self-hosted, open source).
 
-Takes a photo + audio/text and produces a video of the person speaking.
+Pipeline: photo + audio → SadTalker inference → video output
+Text-to-speech handled by edge-tts (free, Microsoft Edge TTS engine).
+
+SadTalker repo: https://github.com/OpenTalker/SadTalker
+edge-tts: https://github.com/rany2/edge-tts
 """
 
 from enum import Enum
@@ -10,51 +14,60 @@ from typing import Optional
 
 class TalkingHeadProvider(str, Enum):
     """Supported talking-head generation providers."""
-    DID = "d-id"
-    HEYGEN = "heygen"
+    SADTALKER = "sadtalker"
+    DID = "d-id"  # legacy fallback
 
 
 class TalkingHeadService:
     """
     Generates animated talking-head videos from photos and audio.
 
+    Uses self-hosted SadTalker (open source) for video generation
+    and edge-tts (free, local) for text-to-speech.
+
     STUB: Returns placeholder URLs.
-    TODO:
-      - Implement D-ID API integration (POST /talks)
-      - Implement HeyGen API integration (POST /v2/video/generate)
-      - Handle polling for video completion
-      - Return final video URL for storage/playback
+    TODO: Implement actual SadTalker inference pipeline.
     """
 
-    def __init__(self, provider: TalkingHeadProvider = TalkingHeadProvider.DID):
+    def __init__(self, provider: TalkingHeadProvider = TalkingHeadProvider.SADTALKER):
         self.provider = provider
 
     async def generate_portrait(
         self,
-        photo_url: str,
-        audio_url: Optional[str] = None,
+        photo_path: str,
+        audio_path: Optional[str] = None,
         text: Optional[str] = None,
-        voice_id: Optional[str] = None,
     ) -> str:
         """
-        Generate a talking-head video.
+        Generate a talking-head video from a photo and audio/text.
 
-        Either audio_url (voice recording) or text + voice_id must be provided.
+        If text is provided and audio_path is not, generates speech
+        using edge-tts first, then runs SadTalker.
 
         STUB: returns a placeholder URL.
         TODO:
-          - Call D-ID: POST https://api.d-id.com/talks
-            body: {source_url: photo_url, script: {type: 'audio', audio_url: ...}}
-          - Or call HeyGen: POST https://api.heygen.com/v2/video/generate
-            body: {caption: text, voice_id: ..., image_url: photo_url}
-          - Poll until video is ready, return URL
+          - Call edge-tts: edge-tts --text "$text" --write-media output.wav
+          - Call SadTalker: python inference.py --driven_audio speech.wav
+            --source_image portrait.jpg --result_dir output/
+          - Upload result to api.video for hosting
         """
         return "https://placeholder.livity.ai/portraits/talking-head.mp4"
 
-    async def get_portrait_status(self, job_id: str) -> str:
+    async def text_to_speech(self, text: str, voice: str = "en-US-JennyNeural") -> str:
         """
-        Check the status of a portrait generation job.
+        Generate speech audio from text using edge-tts.
 
-        Returns: 'pending', 'processing', 'done', or 'failed'.
+        Args:
+            text: Text to convert to speech
+            voice: Microsoft Edge TTS voice name
+
+        Returns:
+            Path to the generated audio file.
+
+        STUB: returns placeholder path.
+        TODO:
+          - import edge_tts
+          - communicate = edge_tts.Communicate(text, voice)
+          - await communicate.save("output.wav")
         """
-        return "done"
+        return "/tmp/placeholder-speech.wav"
