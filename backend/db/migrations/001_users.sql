@@ -1,6 +1,4 @@
 -- Migration 001: Users table
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 CREATE TABLE users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
